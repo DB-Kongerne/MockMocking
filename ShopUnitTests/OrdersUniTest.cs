@@ -69,7 +69,44 @@ namespace ShopUnitTests
         [TestMethod]
         public async Task GetUserByIdAsync_ReturnsNull_WhenUserDoesNotExist()
         {
+            // Arrange
+            var userId = 0;
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            handlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Get &&
+                        req.RequestUri.ToString().Contains($"/api/User/{userId}")
+                    ),
+                    ItExpr.IsAny<CancellationToken>()
+                )
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.NotFound,
+                    
+                });
+
+            // Use the same base address as in the application
+            var httpClient = new HttpClient(handlerMock.Object)
+            {
+                BaseAddress = new Uri("http://localhost:7088") 
+            };
+
+            var mockHttpClientFactory = new Mock<IHttpClientFactory>();
+            mockHttpClientFactory
+                .Setup(factory => factory.CreateClient(It.IsAny<string>()))
+                .Returns(httpClient);
+
+            var orderService = new OrdersController(mockHttpClientFactory.Object);
+    
+            // Act
+            var result = await orderService.GetUserWithOrders(userId) as NotFoundResult;
+
+            // assert
             
+            Assert.IsNull(result);
+
         }
 
 
