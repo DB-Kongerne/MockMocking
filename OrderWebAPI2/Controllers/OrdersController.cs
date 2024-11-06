@@ -16,7 +16,7 @@ namespace OrdersWebAPI2.Controllers
         //Combines user and order data into a single response.
 
         private readonly HttpClient _httpClient;
-        private  OrderRepository _orderRepository;
+        public  OrderRepository _orderRepository;
 
         public OrdersController(IHttpClientFactory httpClientFactory)
         {
